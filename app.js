@@ -40,7 +40,7 @@ const showData = (data) => {
         data.forEach(val => {
             const allprofit = val.price_change_percentage_24h.toFixed(2);
 
-            let dataItem = `<tr  onclick="moreInformation('${val.id}')" class="shadow-sm shadow-gray-700 hover:bg-gray-900 cursor-pointer">
+            let dataItem = `<tr  onclick="moreInformation('${val.id}','${val.current_price}')" class="shadow-sm shadow-gray-700 hover:bg-gray-900 cursor-pointer">
         <td class=" border-gray-500 p-1 flex flex-col items-center ">
         <img class="w-14 pl-3" src="${val.image}"/>
         <p class="pl-3 mt-2">${val.name}</p>
@@ -59,18 +59,18 @@ loadData();
 
 
 
-const moreInformation = async (data) => {
+const moreInformation = async (data, cprize) => {
     bodyOverlay.classList.remove('hidden');
     const loadSingle = await fetch(`https://api.coingecko.com/api/v3/coins/${data}`);
     const jsonSingle = await loadSingle.json();
-    showModal(jsonSingle);
+    showModal(jsonSingle, cprize);
     modalContent.classList.add('active');
 
 }
 
 
 const modalContent = document.querySelector('.modal-all-content');
-const showModal = (data) => {
+const showModal = (data, cprize) => {
 
     let modalItems = `
     <div div class="modal-head py-3 border-b border-gray-600 flex justify-between items-center">
@@ -86,8 +86,61 @@ const showModal = (data) => {
             </svg>
         </button>
 
-    </div>`;
+    </div>
+    
+    <div class="modal-body grid gap-5 grid-cols-1 md:grid-cols-2 mt-4">
+       <div class="modal-left ">
+       <h2 class="capitalize font-bold text-3xl">${data.id}<span class="text-gray-700 text-lg font-semibold ml-2">${data.symbol}</span></h2>
+       <p class="text-yellow-400 font-semibold mt-3">Creation Date: ${data.genesis_date ? data.genesis_date : `<span>date is not avilable</span>`}</p>
+       <p id="discription" class="mt-3 text-white capitalize text-opacity-90 leading-relaxed">hello</p>
+       </div>
+       <div class="modal-right">
+       <h2 class="mb-1 text-3xl capitalize font-bold text-gray-700">Current Prize:</h2>
+       <p class="mb-4 capitalize text-2xl font-semibold">1 ${data.symbol}= <span class="text-yellow-400">${cprize}$</span></p>
+         <p class="capitalize mt-2 text-gray-700">trade now</p>
+         <div class="trade-container max-h-80 overflow-y-auto no-scrollbar mt-5">
+                <table class=" border-none w-full border text-white text-center">
+                    <thead class="">
+                        <tr class="shadow-sm shadow-gray-700">
+                            <th class="p-3">coin</th>
+                            
+                            <th class="p-3">market</th>
+                            <th class="p-3">link</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="tradeTable">
+
+                    </tbody>
+
+                </table>
+         </div>
+       </div>
+    </div>
+    
+    
+    `;
     modalContent.innerHTML = modalItems;
+
+    const tradeContainer = document.querySelector('.tradeTable');
+    if (data.description.en !== "") {
+        document.querySelector('#discription').innerHTML = data.description.en.slice(0, 300);
+    } else {
+        document.querySelector('#discription').innerHTML = `<p class="text-2xl text-gray-700">Sorry Discription is not Avilable</p>`;
+    }
+
+    data.tickers.forEach((v) => {
+        let tradeItem = `<tr   class="shadow-sm  shadow-gray-700  cursor-pointer">
+        <td class=" border-gray-500 p-1.5 mt-2"><span>${v.base.slice(0, 10)} / ${v.target.slice(0, 10)}</span></td>
+        
+        <td class=" p-1.5 border-gray-500 mt-2">${v.market.name}</td>
+        <td class=" p-1.5 border-gray-500 mt-2"><button class="bg-yellow-500 w-16 rounded-sm capitalize font-semibold h-9"><a target="_BLANK" class="block" href="${v.trade_url}">Trade</a></button></td>
+         </tr>`;
+        tradeContainer.innerHTML += tradeItem;
+    })
+
+
+
 
 }
 
