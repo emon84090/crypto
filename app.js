@@ -1,12 +1,13 @@
 const spinner = document.querySelector('#spinner');
 const searchInput = document.querySelector('.data-search input');
+const searchBtn = document.querySelector('.data-search button');
 const notFoundText = document.querySelector('#nodata');
 const tableData = document.querySelector('.tableBody');
 const bodyOverlay = document.querySelector('.body-overlay');
 
 const searchFun = (searchVal, apidata) => {
     const searchmatchData = apidata.filter((e) => {
-        if (e.id.toLowerCase().includes(searchVal.toLowerCase())) {
+        if (e.id.toLowerCase().includes(searchVal.toLowerCase()) || e.symbol.toLowerCase().includes(searchVal.toLowerCase())) {
             return e;
         }
     })
@@ -19,9 +20,16 @@ const loadData = async () => {
     const jsonData = await getData.json();
     showData(jsonData);
 
-    searchInput.addEventListener('keyup', (e) => {
-        const searchVal = e.target.value;
-        searchFun(searchVal, jsonData);
+    searchBtn.addEventListener('click', (e) => {
+
+        const searchVal = searchInput.value;
+        if (searchVal === "") {
+            alert('plese write something');
+            return false;
+        } else {
+            searchFun(searchVal, jsonData);
+        }
+
     })
 
 }
